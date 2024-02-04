@@ -1,10 +1,9 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
+title: ""
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 ## Bug Report
@@ -15,9 +14,9 @@ Briefly describe the bug.
 
 **Steps to Reproduce:**
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 **Expected Behavior:**
 

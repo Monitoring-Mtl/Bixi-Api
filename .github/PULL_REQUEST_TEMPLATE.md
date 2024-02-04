@@ -7,6 +7,10 @@ Briefly describe the purpose of this pull request.
 If this pull request is related to a GitHub issue, link it here with a `Closes`
 directive if applicable.
 
+## Changes Made
+
+List the changes you've made in this pull request.
+
 ## Checklist
 
 - [ ] I have tested these changes locally.
