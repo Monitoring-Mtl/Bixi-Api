@@ -1,9 +1,9 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
-title: ""
+name: Feature Request
+about: Create a new feature
+title: ''
 labels: enhancement
-assignees: ""
+assignees: ''
 ---
 
 ## Feature Request
