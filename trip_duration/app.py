@@ -15,7 +15,7 @@ def lambda_handler(event, context):
             # Extract query parameters
             startTime = event["queryStringParameters"]["startTime"]
             endTime = event["queryStringParameters"]["endTime"]
-            # Optional: Handle filtering by start and end station names or arrondissements
+            # Optional: Handle filtering by start and end stations and arrondissements
 
             # Logic to calculate average trip duration based on the parameters
             # Placeholder

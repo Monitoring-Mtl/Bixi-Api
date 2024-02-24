@@ -12,42 +12,43 @@ on:
 jobs:
   linting:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
 
-      - name: Lint with ESLint and auto fix
-        # Lint all JavaScript and Typescript files using config file and fix any errors
+      - name: Install dependencies
         run: |
-          npm run lint --fix
-          npm run format
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          pip install -r tests/requirements.txt
 
-      - name: Commit fixes if needed
+      - name: Lint with flake8
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          if [[ $(git diff --stat) != '' ]]; then 
-              git commit -am "Fix lint errors"
-          else
-              echo "No lint errors found"
-          fi
+          flake8 . --count --exit-zero --max-line-length=127 --statistics --exclude=.aws-sam
 
   testing:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+          pip install -r tests/requirements.txt
 
       - name: Run tests
-        uses: ./.github/actions/run-tests
+        run: pytest tests/
 
       # - name: Configure pages
       #   if: ${{ inputs.deploy-test-coverage }}
