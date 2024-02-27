@@ -18,6 +18,8 @@ jobs:
       
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
+        with:
+          node-version: '16'
 
       - name: Install NPM dependencies
         run: npm install
