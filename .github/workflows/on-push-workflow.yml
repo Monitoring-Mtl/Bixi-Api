@@ -23,7 +23,7 @@ jobs:
   # remove when secrets key are configured!
   lint-and-test:
   name: Lint, test and deploy test coverage to Github Pages
-  uses: ./.github/actions/lint-test/lint-test-workflow.yml
+  uses: ./.github/workflows/lint-test-workflow.yml
   with:
     deploy: ${{ github.event.inputs.enable_deployment }}
 
