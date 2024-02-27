@@ -6,8 +6,8 @@ on:
       deploy:
         description: 'Deploy to GitHub Pages (true/false)'
         required: false
-        default: false
-        type: boolean
+        default: 'false'
+        type: string
 
 jobs:
   security:
@@ -55,7 +55,7 @@ jobs:
           output: codeql-results
     
   deployment:
-    if: ${{ github.event.inputs.deploy == 'true' }}
+    if: ${{ inputs.deploy == 'true' }}
     needs: [security, code_analysis]
     runs-on: ubuntu-latest
     steps:

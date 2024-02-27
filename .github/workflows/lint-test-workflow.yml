@@ -6,8 +6,8 @@ on:
       deploy:
         description: 'Deploy to GitHub Pages (true/false)'
         required: false
-        default: false
-        type: boolean
+        default: 'false'
+        type: string
 
 jobs:
   linting:
@@ -52,7 +52,7 @@ jobs:
         run: pytest tests/ --cov=./ --cov-report=xml
     
   deployment:
-    if: ${{ github.event.inputs.deploy == 'true' }}
+    if: ${{ inputs.deploy == 'true' }}
     needs: [linting, testing]
     runs-on: ubuntu-latest
     steps:
