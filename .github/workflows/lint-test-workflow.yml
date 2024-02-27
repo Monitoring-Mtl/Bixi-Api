@@ -1,7 +1,7 @@
 name: Lint and test
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       deploy:
         description: 'Deploy to GitHub Pages (true/false)'

@@ -1,7 +1,7 @@
 name: Security and code analysis
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       deploy:
         description: 'Deploy to GitHub Pages (true/false)'
