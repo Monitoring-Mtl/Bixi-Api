@@ -21,15 +21,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-and-test:
-    name: Lint, test and deploy test coverage to Github Pages
-    uses: ./.github/workflows/lint-test-workflow.yml
-    with:
-      deploy-test-coverage: true
 
   # deploy:
   #   name: Deploy to AWS
-  #   needs: [lint-and-test]
   #   runs-on: ubuntu-latest
 
   #   steps:

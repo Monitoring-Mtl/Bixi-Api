@@ -3,9 +3,9 @@ name: Lint and test
 on:
   workflow_call:
     inputs:
-      deploy-test-coverage:
-        description: Whether to deploy test coverage to Github Pages
-        required: true
+      deploy:
+        description: 'Deploy to GitHub Pages (true/false)'
+        required: false
         default: false
         type: boolean
 
@@ -44,28 +44,33 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pytest
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
           pip install -r tests/requirements.txt
 
-      - name: Run tests
-        run: pytest tests/
+      - name: Run tests with coverage
+        run: pytest tests/ --cov=./ --cov-report=xml
+    
+  deployment:
+    if: ${{ github.event.inputs.deploy == 'true' }}
+    needs: [linting, testing]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # - name: Configure pages
-      #   if: ${{ inputs.deploy-test-coverage }}
-      #   uses: actions/configure-pages@v3
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure pages
+        uses: actions/configure-pages@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Upload artifact
-      #   if: ${{ inputs.deploy-test-coverage }}
-      #   uses: actions/upload-pages-artifact@v1
-      #   with:
-      #     name: test-coverage
-      #     path: ./coverage/lcov-report
+      - name: Upload artifact for deployment
+        uses: actions/upload-pages-artifact@v1
+        with:
+          name: test-coverage
+          path: ./coverage.xml
 
-      # - name: Deploy to GitHub Pages
-      #   if: ${{ inputs.deploy-test-coverage }}
-      #   id: deployment
-      #   uses: actions/deploy-pages@v2
-      #   with:
-      #     artifact_name: test-coverage
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
+        with:
+          artifact_name: test-coverage
