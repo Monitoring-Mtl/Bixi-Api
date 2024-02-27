@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      
+
   # Allows the manual execution of the workflow from the Action tab
   workflow_dispatch:
 
@@ -20,6 +20,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # remove when secrets key are configured!
+  lint-and-test:
+  name: Lint, test and deploy test coverage to Github Pages
+  uses: ./.github/actions/lint-test/lint-test-workflow.yml
+  with:
+    deploy: ${{ github.event.inputs.enable_deployment }}
 
   # deploy:
   #   name: Deploy to AWS
