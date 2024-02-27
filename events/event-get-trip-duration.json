@@ -1,0 +1,13 @@
+{
+  "httpMethod": "GET",
+  "resource": "/trip-durations/average",
+  "path": "/trip-durations/average",
+  "queryStringParameters": {
+    "startTime": "1672444800000",
+    "endTime": "1675209599000"
+  },
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": null
+}
