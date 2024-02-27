@@ -22,10 +22,10 @@ concurrency:
 jobs:
   # remove when secrets key are configured!
   lint-and-test:
-  name: Lint, test and deploy test coverage to Github Pages
-  uses: ./.github/workflows/lint-test-workflow.yml
-  with:
-    deploy: ${{ github.event.inputs.enable_deployment }}
+    name: Lint, test and deploy test coverage to Github Pages
+    uses: ./.github/workflows/lint-test-workflow.yml
+    with:
+      deploy: ${{ github.event.inputs.enable_deployment }}
 
   # deploy:
   #   name: Deploy to AWS
