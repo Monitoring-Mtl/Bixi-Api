@@ -10,7 +10,7 @@ on:
    inputs:
       enable_deployment:
         description: 'Deploy to GitHub Pages? (true/false)'
-        required: true
+        required: false
         default: false
         type: boolean
 
