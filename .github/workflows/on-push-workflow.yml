@@ -5,14 +5,8 @@ on:
     branches:
       - main
 
-  # Allows the manual execution of the workflow from the Action tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+# Allows the manual execution of the workflow from the Action tab
+workflow_dispatch:
 
 # Allow one concurrent deployment
 concurrency:
@@ -20,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # remove when secrets key are configured!
+  ############# remove when secrets key are configured! #############
   lint-and-test:
     name: Lint, test and deploy test coverage to Github Pages
     uses: ./.github/workflows/lint-test-workflow.yml
@@ -35,21 +29,22 @@ jobs:
   #     - name: Checkout
   #       uses: actions/checkout@v3
 
-  #     - name: Setup Node.js
-  #       uses: ./.github/actions/setup-node
-
+  #     - name: Set up Python 3.9
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.9'
+  #   
   #     - name: Configure AWS Credentials
   #       uses: aws-actions/configure-aws-credentials@v1-node16
   #       with:
   #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
   #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ca-central-1 # Change to your preferred AWS region
+  #         aws-region: ca-central-1 
 
   #     - name: Build and Deploy to AWS
   #       env:
   #         BIXI_API_URL: ${{ secrets.BIXI_API_URL }}
   #         BIXI_API_KEY: ${{ secrets.BIXI_API_KEY }}
   #       run: |
-  #         npm run build
   #         sam build
   #         sam deploy --parameter-overrides ApiUrl=$STM_API_URL ApiKey=$STM_API_KEY
