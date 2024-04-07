@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from trip_duration import app
+from trips import app
 
 
 @pytest.fixture()

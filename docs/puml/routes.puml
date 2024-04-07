@@ -1,0 +1,14 @@
+@startmindmap
+* /
+** /trips
+*** /duration/stats?min_start_time=&max_start_time=
+*** /time
+**** /start
+***** /minimum
+***** /maximum
+**** /end
+***** /minimum
+***** /maximum
+** /health
+** /docs
+@endmindmap
