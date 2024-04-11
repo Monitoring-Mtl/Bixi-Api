@@ -1,4 +1,4 @@
-@startmindmap
+@startmindmap routes
 * /
 ** /trips
 *** /duration/stats?min_start_time=&max_start_time=

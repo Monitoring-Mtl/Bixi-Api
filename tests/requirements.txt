@@ -1,4 +1,4 @@
-pytest
-flake8
-boto3
-requests
+fastapi
+uvicorn
+mangum
+motor

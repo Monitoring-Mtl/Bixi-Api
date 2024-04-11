@@ -11,6 +11,10 @@ Parameters:
     Type: String
   BixiTripCollection:
     Type: String
+  BixiCacheCollection:
+    Type: String
+  BixiTripCacheTtl:
+    Type: String
 
 Resources:
   BixiApi:
@@ -33,6 +37,8 @@ Resources:
           MONGO_DATABASE_NAME: !Ref MongoDatabaseName
           BIXI_LOCATION_COLLECTION: !Ref BixiLocationCollection
           BIXI_TRIP_COLLECTION: !Ref BixiTripCollection
+          BIXI_CACHE_COLLECTION: !Ref BixiCacheCollection
+          BIXI_TRIP_CACHE_TTL: !Ref BixiTripCacheTtl
       Events:
         Root:
           Type: HttpApi

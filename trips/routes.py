@@ -15,13 +15,15 @@ async def health():
 @trip_router.get("/duration/stats", tags=["trips"], response_model=TripStatModel)
 async def get_trip_stats(
     controller: TripController = Depends(get_controller),
-    min_start_time: int = Query(default=0, ge=0),
-    max_start_time: int = Query(default=MAX_INT64, le=MAX_INT64),
+    minStartTime: int = Query(default=0, ge=0, description="in milliseconds"),
+    maxStartTime: int = Query(
+        default=MAX_INT64 - 1000, le=MAX_INT64, description="in milliseconds"
+    ),
 ):
-    if min_start_time > max_start_time:
+    if minStartTime > maxStartTime:
         detail = "start_time_max_ms must be greater than start_time_min_ms"
         raise HTTPException(status_code=400, detail=detail)
-    return await controller.get_trip_stats(min_start_time, max_start_time)
+    return await controller.get_trip_stats(minStartTime, maxStartTime)
 
 
 @trip_router.get("/time/start/minimum", tags=["trips"], response_model=TripModel)
