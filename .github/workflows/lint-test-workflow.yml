@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       deploy:
-        description: 'Deploy to GitHub Pages (true/false)'
+        description: "Deploy to GitHub Pages (true/false)"
         required: false
-        default: 'false'
+        default: "false"
         type: string
 
 jobs:
@@ -14,22 +14,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest pytest-cov
           pip install -r tests/requirements.txt
-      
+
       - name: Lint with flake8
         run: flake8 . --count --exit-zero --max-line-length=127 --statistics --exclude=.aws-sam
-      
+
       - name: Run tests with coverage
         run: pytest tests/ --cov=. --cov-report=html:htmlcov
         env:
@@ -39,7 +39,6 @@ jobs:
           BIXI_TRIP_COLLECTION: ${{ vars.BIXI_TRIP_COLLECTION }}
           BIXI_CACHE_COLLECTION: ${{ vars.BIXI_CACHE_COLLECTION }}
           BIXI_TRIP_CACHE_TTL: ${{ vars.BIXI_TRIP_CACHE_TTL }}
-      
 
       - name: Configure pages
         if: ${{ inputs.deploy == 'true' }}
@@ -52,7 +51,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           name: test-coverage
-          path: htmlcov/  
+          path: htmlcov/
 
       - name: Deploy to GitHub Pages
         if: ${{ inputs.deploy == 'true' }}
