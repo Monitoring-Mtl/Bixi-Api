@@ -29,6 +29,7 @@ Resources:
       Handler: app.handler
       Runtime: python3.11
       MemorySize: 512
+      Timeout: 60
       Description: Handler for all trip duration related operations
       Role: !GetAtt TripDurationFunctionRole.Arn
       Environment:

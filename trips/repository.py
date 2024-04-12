@@ -1,10 +1,9 @@
-from constants import BIXI_TRIP_COLLECTION
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from motor.motor_asyncio import AsyncIOMotorCollection
 
 
 class TripRepository:
-    def __init__(self, db: AsyncIOMotorDatabase):
-        self.db = db
+    def __init__(self, collection: AsyncIOMotorCollection):
+        self.collection = collection
 
     async def get_trip_stats(self, minStartTimeMs: int, maxStartTimeMs: int) -> dict:
         matching = {
@@ -23,38 +22,38 @@ class TripRepository:
                 "tripCount": {"$count": {}},
             }
         }
-        cursor = self.db[BIXI_TRIP_COLLECTION].aggregate([matching, grouping])
+        cursor = self.collection.aggregate([matching, grouping])
         result = await cursor.to_list(length=1)
         if result:
             return result[0]
         return {}
 
     async def get_minimum_start_time(self):
-        return await self.db[BIXI_TRIP_COLLECTION].find_one(
+        return await self.collection.find_one(
             {"startTimeMs": {"$ne": None}}, sort=[("startTimeMs", 1)]
         )
 
     async def get_maximum_start_time(self):
-        return await self.db[BIXI_TRIP_COLLECTION].find_one(
+        return await self.collection.find_one(
             {"startTimeMs": {"$ne": None}}, sort=[("startTimeMs", -1)]
         )
 
     async def get_minimum_end_time(self):
-        return await self.db[BIXI_TRIP_COLLECTION].find_one(
+        return await self.collection.find_one(
             {"endTimeMs": {"$ne": None}}, sort=[("endTimeMs", 1)]
         )
 
     async def get_maximum_end_time(self):
-        return await self.db[BIXI_TRIP_COLLECTION].find_one(
+        return await self.collection.find_one(
             {"endTimeMs": {"$ne": None}}, sort=[("endTimeMs", -1)]
         )
 
     async def get_minimum_duration(self):
-        return await self.db[BIXI_TRIP_COLLECTION].find_one(
+        return await self.collection.find_one(
             {"durationMs": {"$ne": None}}, sort=[("durationMs", 1)], limit=1
         )
 
     async def get_maximum_duration(self):
-        return await self.db[BIXI_TRIP_COLLECTION].find_one(
+        return await self.collection.find_one(
             {"durationMs": {"$ne": None}}, sort=[("durationMs", -1)], limit=1
         )

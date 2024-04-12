@@ -7,11 +7,11 @@ PyObjectId = Annotated[str, BeforeValidator(str)]
 
 class TripModel(BaseModel):
     id: PyObjectId | None = Field(alias="_id", default=None)
-    startStationName: str | None
-    endStationName: str | None
-    startTimeMs: int | None
-    endTimeMs: int | None
-    durationMs: int | None
+    startStationName: str | None = None
+    endStationName: str | None = None
+    startTimeMs: int | None = None
+    endTimeMs: int | None = None
+    durationMs: int | None = None
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,

@@ -1,3 +1,4 @@
+import traceback
 from functools import wraps
 
 from cache import MongoDBCache
@@ -22,6 +23,9 @@ def use_cache(key_prefix, ttl=TRIP_CACHE_TTL):
             result = await func(self, *args, **kwargs)
             try:
                 await cache.set(cache_key, result, ttl)
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                traceback.print_exc()
             finally:
                 return result
 

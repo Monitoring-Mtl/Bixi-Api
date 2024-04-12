@@ -2,3 +2,6 @@ fastapi
 uvicorn
 mangum
 motor
+pytest
+pytest-asyncio
+httpx
