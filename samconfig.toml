@@ -13,6 +13,7 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = false
 resolve_s3 = true
+s3_prefix = "bixi-api"
 region = "ca-central-1"
 image_repositories = []
 
