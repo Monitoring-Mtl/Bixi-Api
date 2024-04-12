@@ -27,6 +27,7 @@ jobs:
     uses: ./.github/workflows/lint-test-workflow.yml
     with:
       deploy: ${{ github.event.inputs.enable_deployment }}
+    secrets: inherit
 
   security-and-analysis:
     name: Security, code analysis and deploy analysis to Github Pages

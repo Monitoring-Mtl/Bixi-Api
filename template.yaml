@@ -1,46 +1,100 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  Bixi-Api
+Description: Bixi-Api
 
-Globals:
-  Function:
-    Runtime: python3.12
-    MemorySize: 128
-    Timeout: 100
-    LoggingConfig:
-      LogFormat: JSON
+Parameters:
+  AtlasUri:
+    Type: String
+  MongoDatabaseName:
+    Type: String
+  BixiLocationCollection:
+    Type: String
+  BixiTripCollection:
+    Type: String
+  BixiCacheCollection:
+    Type: String
+  BixiTripCacheTtl:
+    Type: String
 
 Resources:
   BixiApi:
-    Type: AWS::Serverless::Api
+    Type: AWS::Serverless::HttpApi
     Properties:
       StageName: Prod
-      Tags:
-        Name: !Sub "${AWS::StackName}-API"
-        Stack: !Sub "${AWS::StackName}"
 
   TripDurationFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: trip_duration/
-      Handler: app.lambda_handler
+      CodeUri: trips/
+      Handler: app.handler
+      Runtime: python3.11
+      MemorySize: 512
+      Timeout: 60
       Description: Handler for all trip duration related operations
+      Role: !GetAtt TripDurationFunctionRole.Arn
+      Environment:
+        Variables:
+          ATLAS_URI: !Ref AtlasUri
+          MONGO_DATABASE_NAME: !Ref MongoDatabaseName
+          BIXI_LOCATION_COLLECTION: !Ref BixiLocationCollection
+          BIXI_TRIP_COLLECTION: !Ref BixiTripCollection
+          BIXI_CACHE_COLLECTION: !Ref BixiCacheCollection
+          BIXI_TRIP_CACHE_TTL: !Ref BixiTripCacheTtl
       Events:
-        TripDurationApi:
-          Type: Api
+        Root:
+          Type: HttpApi
           Properties:
-            Path: /trip-durations/average
-            Method: get
-            RestApiId: !Ref BixiApi
+            Path: /
+            Method: ANY
+            ApiId:
+              Ref: BixiApi
+        Proxy:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            ApiId:
+              Ref: BixiApi
+
+  TripDurationFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+
+  TripDurationFunctionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: TripDurationFunctionPolicy
+      Roles:
+        - !Ref TripDurationFunctionRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Join
+              - ""
+              - - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/"
+                - !Select [
+                    1,
+                    !Split [":function:", !GetAtt TripDurationFunction.Arn],
+                  ]
+                - ":*"
 
 Outputs:
-  TripDurationAverageEndpoint:
-    Description: API Gateway endpoint URL for Prod stage for Trip Duration Average function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/trip-durations/average/"
-  TripDurationFunction:
-    Description: Trip Duration Lambda Function ARN
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${BixiApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+
+  TripDurationFunctionArn:
+    Description: "Trip Duration Lambda Function ARN"
     Value: !GetAtt TripDurationFunction.Arn
-  TripDurationFunctionIamRole:
-    Description: Implicit IAM Role created for Trip Duration function
-    Value: !GetAtt TripDurationFunctionRole.Arn

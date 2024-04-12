@@ -126,14 +126,16 @@ the project to test that your work environment is functional._
 2. Install Python packages
 
    ```sh
+   cd Bixi-Api
+   python -m venv venv
+   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
 3. Launch the local serverless application using AWS SAM
 
    ```sh
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   sam build
    sam local start-api
    ```
 
