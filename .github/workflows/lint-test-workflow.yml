@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.11"
       
       - name: Install dependencies
         run: |
@@ -32,6 +32,14 @@ jobs:
       
       - name: Run tests with coverage
         run: pytest tests/ --cov=. --cov-report=html:htmlcov
+        env:
+          ATLAS_URI: ${{ secrets.ATLAS_URI_TEST }}
+          MONGO_DATABASE_NAME: ${{ vars.MONGO_DATABASE_NAME_TEST }}
+          BIXI_LOCATION_COLLECTION: ${{ vars.BIXI_LOCATION_COLLECTION }}
+          BIXI_TRIP_COLLECTION: ${{ vars.BIXI_TRIP_COLLECTION }}
+          BIXI_CACHE_COLLECTION: ${{ vars.BIXI_CACHE_COLLECTION }}
+          BIXI_TRIP_CACHE_TTL: ${{ vars.BIXI_TRIP_CACHE_TTL }}
+      
 
       - name: Configure pages
         if: ${{ inputs.deploy == 'true' }}

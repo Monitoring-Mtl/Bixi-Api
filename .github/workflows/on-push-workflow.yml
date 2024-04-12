@@ -12,37 +12,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ############# remove when secrets key are configured! #############
-  lint-and-test:
-    name: Lint, test and deploy test coverage to Github Pages
-    uses: ./.github/workflows/lint-test-workflow.yml
-    with:
-      deploy: ${{ github.event.inputs.enable_deployment }}
+  deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy to AWS
 
-  # deploy:
-  #   name: Deploy to AWS
-  #   runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-  #     - name: Set up Python 3.9
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: '3.9'
-  #   
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v1-node16
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ca-central-1 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ca-central-1
 
-  #     - name: Build and Deploy to AWS
-  #       env:
-  #         BIXI_API_URL: ${{ secrets.BIXI_API_URL }}
-  #         BIXI_API_KEY: ${{ secrets.BIXI_API_KEY }}
-  #       run: |
-  #         sam build
-  #         sam deploy --parameter-overrides ApiUrl=$STM_API_URL ApiKey=$STM_API_KEY
+      - name: Build and Deploy to AWS
+        env:
+          ATLAS_URI: ${{ secrets.ATLAS_URI }}
+          MONGO_DATABASE_NAME: ${{ vars.MONGO_DATABASE_NAME }}
+          BIXI_LOCATION_COLLECTION: ${{ vars.BIXI_LOCATION_COLLECTION }}
+          BIXI_TRIP_COLLECTION: ${{ vars.BIXI_TRIP_COLLECTION }}
+          BIXI_CACHE_COLLECTION: ${{ vars.BIXI_CACHE_COLLECTION }}
+          BIXI_TRIP_CACHE_TTL: ${{ vars.BIXI_TRIP_CACHE_TTL }}
+        run: |
+          sam build
+          sam deploy --parameter-overrides \
+            AtlasUri=$ATLAS_URI \
+            MongoDatabaseName=$MONGO_DATABASE_NAME \
+            BixiLocationCollection=$BIXI_LOCATION_COLLECTION \
+            BixiTripCollection=$BIXI_TRIP_COLLECTION \
+            BixiCacheCollection=$BIXI_CACHE_COLLECTION \
+            BixiTripCacheTtl=$BIXI_TRIP_CACHE_TTL

@@ -1,5 +1,8 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
 ATLAS_URI = os.environ["ATLAS_URI"]
 MONGO_DATABASE_NAME = os.environ["MONGO_DATABASE_NAME"]
 BIXI_TRIP_COLLECTION = os.environ["BIXI_TRIP_COLLECTION"]
