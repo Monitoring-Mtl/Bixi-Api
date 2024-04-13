@@ -1,7 +1,7 @@
-from constants import MAX_INT64
+from constants import MAX_INT64, YEAR
 from controller import TripController
 from fastapi import APIRouter, HTTPException, Query
-from models import TripModel, TripStatModel
+from models import TripAverageModel, TripModel
 
 health_router = APIRouter(prefix="/health")
 trip_router = APIRouter(prefix="/trips")
@@ -17,17 +17,18 @@ async def health():
     return {"message": "ok"}
 
 
-@trip_router.get("/duration/stats", tags=["trips"], response_model=TripStatModel)
-async def get_trip_stats(
-    minStartTime: int = Query(default=0, ge=0, description="in milliseconds"),
-    maxStartTime: int = Query(
-        default=MAX_INT64 - 1000, le=MAX_INT64, description="in milliseconds"
-    ),
+@trip_router.get("/duration/average", tags=["trips"], response_model=TripAverageModel)
+async def get_average_duration(
+    minStartTime: int = Query(ge=0, description="in milliseconds"),
+    maxStartTime: int = Query(le=MAX_INT64, description="in milliseconds"),
 ):
     if minStartTime > maxStartTime:
         detail = "start_time_max_ms must be greater than start_time_min_ms"
         raise HTTPException(status_code=400, detail=detail)
-    return await controller.get_trip_stats(minStartTime, maxStartTime)
+    if maxStartTime - minStartTime > YEAR:
+        detail = "the range must not exceed 1 year"
+        raise HTTPException(status_code=400, detail=detail)
+    return await controller.get_average_duration(minStartTime, maxStartTime)
 
 
 @trip_router.get(

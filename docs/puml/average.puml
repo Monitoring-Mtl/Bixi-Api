@@ -1,0 +1,32 @@
+@startuml average
+
+participant "app:FastAPI" as app
+participant ":Controller" as controller
+participant ":Cache" as cache
+participant ":Repository" as repo
+database "MongoDB" as db
+
+-> app : get average duration\nfor timeframe
+activate app
+app -> app : assert timeframe < 1 year
+app -> controller : get_average(timeframe)
+activate controller
+controller -> controller: create cache_key
+controller -> cache: get_data(cache_key)
+alt data not available
+    controller -> repo: get_average(timeframe)
+    activate repo
+    repo -> repo: create\ntime segments
+    par for each segment
+        repo -> db: get aggr duration\n& tripCount
+    end
+    repo -> repo: compute total\ntripCount & average
+    return result
+    controller -> cache: set(cacher_key, result)    
+end
+return result
+
+return result
+deactivate app
+
+@enduml

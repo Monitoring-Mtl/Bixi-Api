@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from trips.models import TripModel, TripStatModel
+from trips.models import TripAverageModel, TripModel
 
 
 def test_trip_model_creation_from_dict():
@@ -40,30 +40,18 @@ def test_trip_model_validation_error():
 
 
 def test_trip_stat_model_creation_from_dict():
-    data = {
-        "averageDuration": 3600.0,
-        "minDuration": 1800,
-        "maxDuration": 5400,
-        "stdDevDuration": 600.0,
-        "tripCount": 10,
-    }
-    stats = TripStatModel(**data)
+    data = {"averageDuration": 3600.0, "tripCount": 10}
+    stats = TripAverageModel(**data)
     assert stats.averageDuration == 3600.0
-    assert stats.minDuration == 1800
-    assert stats.maxDuration == 5400
-    assert stats.stdDevDuration == 600.0
     assert stats.tripCount == 10
 
 
 def test_trip_stat_model_defaults():
-    stats = TripStatModel()
+    stats = TripAverageModel()
     assert stats.averageDuration is None
-    assert stats.minDuration is None
-    assert stats.maxDuration is None
-    assert stats.stdDevDuration is None
     assert stats.tripCount is None
 
 
 def test_trip_stat_model_validation_error():
     with pytest.raises(ValidationError):
-        TripStatModel(tripCount="not_an_int")
+        TripAverageModel(tripCount="not_an_int")

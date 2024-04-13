@@ -18,9 +18,6 @@ class TripModel(BaseModel):
     )
 
 
-class TripStatModel(BaseModel):
+class TripAverageModel(BaseModel):
     averageDuration: float | None = None
-    minDuration: int | None = None
-    maxDuration: int | None = None
-    stdDevDuration: float | None = None
     tripCount: int | None = None
