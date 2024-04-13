@@ -17,45 +17,55 @@ def repo(mock_collection):
 
 
 @pytest.mark.asyncio
-async def test_get_trip_stats(repo: TripRepository, mock_collection):
-    mock_cursor = AsyncMock()
-    mock_cursor.to_list.return_value = [
-        {
-            "_id": None,
-            "averageDuration": 300000,
-            "minDuration": 60000,
-            "maxDuration": 1200000,
-            "stdDevDuration": 150000,
-            "tripCount": 100,
-        }
-    ]
-    mock_collection.aggregate.return_value = mock_cursor
-    result = await repo.get_trip_stats(1609459200000, 1612137600000)
-    assert result == {
-        "_id": None,
-        "averageDuration": 300000,
-        "minDuration": 60000,
-        "maxDuration": 1200000,
-        "stdDevDuration": 150000,
-        "tripCount": 100,
-    }
+async def test_get_average_duration_empty_results(repo, mock_collection):
+    mock_collection.aggregate.return_value.to_list = AsyncMock(return_value=[])
+    min_start, max_start = 0, 86400000
+    result = await repo.get_average_duration(min_start, max_start)
+    assert result == {"averageDuration": None, "tripCount": 0}
 
+
+@pytest.mark.asyncio
+async def test_get_average_duration(repo, mock_collection):
+    mock_collection.aggregate.return_value.to_list = AsyncMock(
+        side_effect=[
+            [{"sumDuration": 1000, "countTrips": 10}],
+            [{"sumDuration": 500, "countTrips": 5}],
+            []
+        ]
+    )
+    min_start, max_start = 0, 3 * 86400000
+    result = await repo.get_average_duration(min_start, max_start)
+    assert result == {"averageDuration": 100, "tripCount": 15}
+
+
+@pytest.mark.asyncio
+async def test_get_durations_no_results(repo, mock_collection):
+    mock_collection.aggregate.return_value.to_list = AsyncMock(return_value=[])
+    result = await repo.get_durations(0, 86400000)
+    assert result == {}
+
+
+@pytest.mark.asyncio
+async def test_get_durations(repo, mock_collection):
+    minStartTimeMs, maxStartTimeMs = 0, 86400000
+    expected_result = {"_id": None, "sumDuration": 500, "countTrips": 5}
+    mock_collection.aggregate.return_value.to_list = AsyncMock(
+        return_value=[expected_result]
+    )
+    await repo.get_durations(minStartTimeMs, maxStartTimeMs)
     mock_collection.aggregate.assert_called_once_with(
         [
             {
                 "$match": {
-                    "startTimeMs": {"$gte": 1609459200000, "$lte": 1612137600000},
+                    "startTimeMs": {"$gt": minStartTimeMs, "$lte": maxStartTimeMs},
                     "durationMs": {"$ne": None},
                 }
             },
             {
                 "$group": {
                     "_id": None,
-                    "averageDuration": {"$avg": "$durationMs"},
-                    "minDuration": {"$min": "$durationMs"},
-                    "maxDuration": {"$max": "$durationMs"},
-                    "stdDevDuration": {"$stdDevPop": "$durationMs"},
-                    "tripCount": {"$count": {}},
+                    "sumDuration": {"$sum": "$durationMs"},
+                    "countTrips": {"$count": {}},
                 }
             },
         ]

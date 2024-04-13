@@ -17,14 +17,17 @@ def use_cache(key_prefix, ttl=TRIP_CACHE_TTL):
                 + "_"
                 + "_".join(f"{k}_{v}" for k, v in kwargs.items())
             )
+            print(f"Cache key: {cache_key}")
             cached_result = await cache.get(cache_key)
             if cached_result is not None:
+                print("Returning cached result")
                 return cached_result
             result = await func(self, *args, **kwargs)
             try:
                 await cache.set(cache_key, result, ttl)
+                print("Cache updated")
             except Exception as e:
-                print(f"An error occurred: {e}")
+                print(f"An error occurred during cache set: {e}")
                 traceback.print_exc()
             finally:
                 return result
@@ -40,8 +43,10 @@ class TripController:
         self.cache = cache
 
     @use_cache(key_prefix="trip_stats")
-    async def get_trip_stats(self, minStartTimeMs: int, maxStartTimeMs: int):
-        return await self.trip_repository.get_trip_stats(minStartTimeMs, maxStartTimeMs)
+    async def get_average_duration(self, minStartTimeMs: int, maxStartTimeMs: int):
+        return await self.trip_repository.get_average_duration(
+            minStartTimeMs, maxStartTimeMs
+        )
 
     @use_cache(key_prefix="minimum_start_time")
     async def get_minimum_start_time(self):

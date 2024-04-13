@@ -6,15 +6,15 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 
 class Cache(ABC):
     @abstractmethod
-    async def get(self, key: str):
+    def get(self, key: str):
         pass
 
     @abstractmethod
-    async def set(self, key: str, value, ttl: int) -> None:
+    def set(self, key: str, value, ttl: int) -> None:
         pass
 
     @abstractmethod
-    async def delete(self, key: str) -> None:
+    def delete(self, key: str) -> None:
         pass
 
 
