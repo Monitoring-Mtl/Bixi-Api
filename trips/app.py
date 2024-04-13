@@ -4,6 +4,7 @@ from constants import (
     BIXI_TRIP_COLLECTION,
     CACHE_COLLECTION,
     MONGO_DATABASE_NAME,
+    STAGE_NAME,
 )
 from controller import TripController
 from fastapi import FastAPI
@@ -19,7 +20,7 @@ cache = MongoDBCache(db[CACHE_COLLECTION])
 controller = TripController(repository, cache)
 use_controller(controller)
 
-app = FastAPI()
+app = FastAPI(root_path=f"/{STAGE_NAME}")
 app.include_router(health_router)
 app.include_router(trip_router)
 handler = Mangum(app)

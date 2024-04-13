@@ -15,12 +15,15 @@ Parameters:
     Type: String
   BixiTripCacheTtl:
     Type: String
+  BixiStageName:
+    Type: String
+    Default: prod
 
 Resources:
   BixiApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: Prod
+      StageName: !Ref BixiStageName
 
   TripDurationFunction:
     Type: AWS::Serverless::Function
@@ -29,7 +32,7 @@ Resources:
       Handler: app.handler
       Runtime: python3.11
       MemorySize: 512
-      Timeout: 60
+      Timeout: 30
       Description: Handler for all trip duration related operations
       Role: !GetAtt TripDurationFunctionRole.Arn
       Environment:
@@ -40,21 +43,20 @@ Resources:
           BIXI_TRIP_COLLECTION: !Ref BixiTripCollection
           BIXI_CACHE_COLLECTION: !Ref BixiCacheCollection
           BIXI_TRIP_CACHE_TTL: !Ref BixiTripCacheTtl
+          STAGE_NAME: !Ref BixiStageName
       Events:
         Root:
           Type: HttpApi
           Properties:
             Path: /
             Method: ANY
-            ApiId:
-              Ref: BixiApi
+            ApiId: !Ref BixiApi
         Proxy:
           Type: HttpApi
           Properties:
             Path: /{proxy+}
             Method: ANY
-            ApiId:
-              Ref: BixiApi
+            ApiId: !Ref BixiApi
 
   TripDurationFunctionRole:
     Type: AWS::IAM::Role
@@ -92,8 +94,8 @@ Resources:
 
 Outputs:
   ApiEndpoint:
-    Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${BixiApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+    Description: "API Gateway endpoint URL for specified stage"
+    Value: !Sub "https://${BixiApi}.execute-api.${AWS::Region}.amazonaws.com/${BixiStageName}"
 
   TripDurationFunctionArn:
     Description: "Trip Duration Lambda Function ARN"
