@@ -2,11 +2,16 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from trips.controller import TripController
+from trips.controller import Controller
 
 
 @pytest.fixture
 def mock_trip_repository():
+    return AsyncMock()
+
+
+@pytest.fixture
+def mock_station_repository():
     return AsyncMock()
 
 
@@ -19,8 +24,8 @@ def mock_cache():
 
 
 @pytest.fixture
-def trip_controller(mock_trip_repository, mock_cache):
-    return TripController(trip_repository=mock_trip_repository, cache=mock_cache)
+def trip_controller(mock_trip_repository, mock_station_repository, mock_cache):
+    return Controller(mock_trip_repository, mock_station_repository, mock_cache)
 
 
 @pytest.mark.asyncio
@@ -106,3 +111,64 @@ async def test_use_cache_miss(trip_controller, mock_cache, mock_trip_repository)
     mock_trip_repository.get_average_duration.assert_awaited_once_with(
         1609459200000, 1609545600000
     )
+
+
+@pytest.mark.asyncio
+async def test_get_arrondissements(
+    trip_controller, mock_station_repository, mock_cache
+):
+    expected = ["Montreal 1", "Montreal 2", "Montreal 3"]
+    mock_station_repository.get_arrondissements.return_value = expected
+    result = await trip_controller.get_arrondissements()
+    assert result == expected
+    mock_cache.get.assert_awaited_once()
+    mock_cache.set.assert_awaited_once()
+    mock_station_repository.get_arrondissements.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_get_stations_by_name(
+    trip_controller, mock_station_repository, mock_cache
+):
+    name = "Louvre"
+    expected = [{"name": "Louvre", "arrondissement": "Montreal 1"}]
+    mock_station_repository.get_stations_by_name.return_value = expected
+    result = await trip_controller.get_stations(name=name, arrondissement=None)
+    assert result == expected
+    mock_cache.get.assert_awaited_once()
+    mock_cache.set.assert_awaited_once()
+    mock_station_repository.get_stations_by_name.assert_awaited_once_with(name)
+
+
+@pytest.mark.asyncio
+async def test_get_station_by_arrondissement(
+    trip_controller, mock_station_repository, mock_cache
+):
+    arrondissement = "Montreal 1"
+    expected = [{"name": "Louvre", "arrondissement": "Montreal 1"}]
+    mock_station_repository.get_station_by_arrondissement.return_value = expected
+    result = await trip_controller.get_stations(
+        name=None, arrondissement=arrondissement
+    )
+    assert result == expected
+    mock_cache.get.assert_awaited_once()
+    mock_cache.set.assert_awaited_once()
+    mock_station_repository.get_station_by_arrondissement.assert_awaited_once_with(
+        arrondissement
+    )
+
+
+@pytest.mark.asyncio
+async def test_get_stations_no_filters(
+    trip_controller, mock_station_repository, mock_cache
+):
+    expected = [
+        {"name": "Louvre", "arrondissement": "Montreal 1"},
+        {"name": "Eiffel Tower", "arrondissement": "Montreal 7"},
+    ]
+    mock_station_repository.get_stations.return_value = expected
+    result = await trip_controller.get_stations(name=None, arrondissement=None)
+    assert result == expected
+    mock_cache.get.assert_awaited_once()
+    mock_cache.set.assert_awaited_once()
+    mock_station_repository.get_stations.assert_awaited_once()

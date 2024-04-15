@@ -9,6 +9,10 @@
 **** /end
 ***** /minimum
 ***** /maximum
+** /stations
+*** /arrondissements
+*** /stations?name=&arrondissement=
 ** /health
 ** /docs
+
 @endmindmap

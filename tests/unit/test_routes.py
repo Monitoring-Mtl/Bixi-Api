@@ -5,8 +5,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from trips.constants import MAX_INT64, YEAR
-from trips.models import TripAverageModel, TripModel
-from trips.routes import health_router, trip_router, use_controller
+from trips.models import StationModel, TripAverageModel, TripModel
+from trips.routes import health_router, stations_router, trip_router, use_controller
 
 
 @pytest.fixture(scope="module")
@@ -14,6 +14,7 @@ def app():
     fastapi_app = FastAPI()
     fastapi_app.include_router(health_router)
     fastapi_app.include_router(trip_router)
+    fastapi_app.include_router(stations_router)
     return fastapi_app
 
 
@@ -123,3 +124,81 @@ def test_get_maximum_end_time(client, mock_controller):
     assert response.status_code == 200
     expected_response = TripModel(endTimeMs=1704062500000).model_dump()
     assert response.json() == expected_response
+
+
+def test_get_arrondissements(client, mock_controller):
+    mock_controller.get_arrondissements = AsyncMock(
+        return_value=["Montreal 1", "Montreal 2", "Montreal 3"]
+    )
+    response = client.get("/stations/arrondissements")
+    assert response.status_code == 200
+    assert response.json() == ["Montreal 1", "Montreal 2", "Montreal 3"]
+
+
+def test_get_stations_by_arrondissement_with_name(client, mock_controller):
+    station_instance = StationModel(id=1, name="Station 1", arrondissement="Montreal 1")
+    mock_controller.get_stations = AsyncMock(return_value=[station_instance])
+    response = client.get("/stations?name=Station 1")
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "name": "Station 1",
+            "arrondissement": "Montreal 1",
+            "latitude": None,
+            "longitude": None,
+        }
+    ]
+
+
+def test_get_stations_by_arrondissement_with_arrondissement(client, mock_controller):
+    station_instance = StationModel(id=1, name="Station 2", arrondissement="Montreal 2")
+    mock_controller.get_stations = AsyncMock(return_value=[station_instance])
+    response = client.get("/stations?arrondissement=Montreal 2")
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "name": "Station 2",
+            "arrondissement": "Montreal 2",
+            "latitude": None,
+            "longitude": None,
+        }
+    ]
+
+
+def test_get_stations_by_arrondissement_with_name_and_arrondissement(
+    client, mock_controller
+):
+    station_instance = StationModel(id=1, name="Station 3", arrondissement="Montreal 3")
+    mock_controller.get_stations = AsyncMock(return_value=[station_instance])
+    response = client.get("/stations?name=Station 3&arrondissement=Montreal 3")
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "name": "Station 3",
+            "arrondissement": "Montreal 3",
+            "latitude": None,
+            "longitude": None,
+        }
+    ]
+
+
+def test_get_stations_by_arrondissement_no_params(client, mock_controller):
+    station_1 = StationModel(id=1, name="Station 1", arrondissement="Montreal 1")
+    station_2 = StationModel(id=1, name="Station 2", arrondissement="Montreal 2")
+    mock_controller.get_stations = AsyncMock(return_value=[station_1, station_2])
+    response = client.get("/stations")
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "name": "Station 1",
+            "arrondissement": "Montreal 1",
+            "latitude": None,
+            "longitude": None,
+        },
+        {
+            "name": "Station 2",
+            "arrondissement": "Montreal 2",
+            "latitude": None,
+            "longitude": None,
+        },
+    ]

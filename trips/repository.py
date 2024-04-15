@@ -74,3 +74,31 @@ class TripRepository:
         return await self.collection.find_one(
             {"durationMs": {"$ne": None}}, sort=[("durationMs", -1)], limit=1
         )
+
+
+class StationRepository:
+    def __init__(self, collection: AsyncIOMotorCollection):
+        self.collection = collection
+
+    async def get_arrondissements(self):
+        pipeline = [
+            {"$match": {"arrondissement": {"$exists": True, "$ne": None}}},
+            {"$group": {"_id": "$arrondissement"}},
+            {"$sort": {"_id": 1}},
+        ]
+        cursor = self.collection.aggregate(pipeline)
+        return [doc["_id"] for doc in await cursor.to_list(length=None)]
+
+    async def get_stations_by_name(self, name: str):
+        query = {"_id": name}
+        cursor = self.collection.find(query).sort("_id", 1)
+        return await cursor.to_list(length=None)
+
+    async def get_station_by_arrondissement(self, arrondissement: str):
+        query = {"arrondissement": arrondissement}
+        cursor = self.collection.find(query).sort("_id", 1)
+        return await cursor.to_list(length=None)
+
+    async def get_stations(self):
+        cursor = self.collection.find({}).sort("_id", 1)
+        return await cursor.to_list(length=None)
