@@ -1,13 +1,14 @@
 from constants import MAX_INT64, YEAR
-from controller import TripController
+from controller import Controller
 from fastapi import APIRouter, HTTPException, Query
-from models import TripAverageModel, TripModel
+from models import StationModel, TripAverageModel, TripModel
 
 health_router = APIRouter(prefix="/health")
 trip_router = APIRouter(prefix="/trips")
+stations_router = APIRouter(prefix="/stations")
 
 
-def use_controller(new_controller: TripController):
+def use_controller(new_controller: Controller):
     global controller
     controller = new_controller
 
@@ -69,3 +70,21 @@ async def get_minimum_end_time():
 )
 async def get_maximum_end_time():
     return await controller.get_maximum_end_time()
+
+
+@stations_router.get("/arrondissements", tags=["stations"], response_model=list[str])
+async def get_arrondissements():
+    return await controller.get_arrondissements()
+
+
+@stations_router.get(
+    "",
+    tags=["stations"],
+    response_model=list[StationModel],
+    response_model_by_alias=False,
+)
+async def get_stations(
+    name: str | None = Query(default=None),
+    arrondissement: str | None = Query(default=None),
+):
+    return await controller.get_stations(name, arrondissement)

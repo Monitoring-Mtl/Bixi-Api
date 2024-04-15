@@ -21,3 +21,14 @@ class TripModel(BaseModel):
 class TripAverageModel(BaseModel):
     averageDuration: float | None = None
     tripCount: int | None = None
+
+
+class StationModel(BaseModel):
+    name: PyObjectId | None = Field(alias="_id", default=None)
+    arrondissement: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+    )

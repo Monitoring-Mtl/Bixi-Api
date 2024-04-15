@@ -3,7 +3,7 @@ from functools import wraps
 
 from cache import MongoDBCache
 from constants import TRIP_CACHE_TTL
-from repository import TripRepository
+from repository import StationRepository, TripRepository
 
 
 def use_cache(key_prefix, ttl=TRIP_CACHE_TTL):
@@ -37,9 +37,15 @@ def use_cache(key_prefix, ttl=TRIP_CACHE_TTL):
     return decorator
 
 
-class TripController:
-    def __init__(self, trip_repository: TripRepository, cache: MongoDBCache):
+class Controller:
+    def __init__(
+        self,
+        trip_repository: TripRepository,
+        station_repository: StationRepository,
+        cache: MongoDBCache,
+    ):
         self.trip_repository = trip_repository
+        self.station_repository = station_repository
         self.cache = cache
 
     @use_cache(key_prefix="trip_stats")
@@ -63,3 +69,17 @@ class TripController:
     @use_cache(key_prefix="maximum_end_time")
     async def get_maximum_end_time(self):
         return await self.trip_repository.get_maximum_end_time()
+
+    @use_cache(key_prefix="arrondissements")
+    async def get_arrondissements(self):
+        return await self.station_repository.get_arrondissements()
+
+    @use_cache(key_prefix="stations")
+    async def get_stations(self, name: str | None, arrondissement: str | None):
+        if name:
+            return await self.station_repository.get_stations_by_name(name)
+        if arrondissement:
+            return await self.station_repository.get_station_by_arrondissement(
+                arrondissement
+            )
+        return await self.station_repository.get_stations()
