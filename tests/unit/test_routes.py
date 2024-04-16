@@ -26,9 +26,7 @@ def client(app):
 @pytest.fixture(scope="module")
 def mock_controller():
     controller = MagicMock()
-    controller.get_average_duration = AsyncMock(
-        return_value=TripAverageModel(averageDuration=250.0, tripCount=100)
-    )
+    controller.get_average_duration = AsyncMock()
     use_controller(controller)
     return controller
 
@@ -40,6 +38,9 @@ def test_health(client):
 
 
 def test_get_average_duration(client, mock_controller):
+    mock_controller.get_average_duration = AsyncMock(
+        return_value=TripAverageModel(averageDuration=250.0, tripCount=100)
+    )
     response = client.get(f"/trips/duration/average?minStartTime=0&maxStartTime={YEAR}")
     assert response.status_code == 200
     assert response.json() == {"averageDuration": 250.0, "tripCount": 100}
@@ -83,6 +84,31 @@ def test_get_average_duration_missing_parameters(client, mock_controller):
     response = client.get("/trips/duration/average")
     assert response.status_code == 422
     assert "detail" in response.json()
+
+
+def test_get_average_duration_with_station_names(client, mock_controller):
+    response = client.get(
+        f"/trips/duration/average?minStartTime=0&maxStartTime={YEAR}&startStationName=StationA&endStationName=StationB"
+    )
+    print(response.text)
+    assert response.status_code == 200
+    assert "averageDuration" in response.json() and "tripCount" in response.json()
+
+
+def test_get_average_duration_only_start_station_name(client, mock_controller):
+    response = client.get(
+        f"/trips/duration/average?minStartTime=0&maxStartTime={YEAR}&startStationName=StationA"
+    )
+    assert response.status_code == 200
+    assert "averageDuration" in response.json() and "tripCount" in response.json()
+
+
+def test_get_average_duration_only_end_station_name(client, mock_controller):
+    response = client.get(
+        f"/trips/duration/average?minStartTime=0&maxStartTime={YEAR}&endStationName=StationB"
+    )
+    assert response.status_code == 200
+    assert "averageDuration" in response.json() and "tripCount" in response.json()
 
 
 def test_get_minimum_start_time(client, mock_controller):

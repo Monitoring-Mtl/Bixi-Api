@@ -22,6 +22,8 @@ async def health():
 async def get_average_duration(
     minStartTime: int = Query(ge=0, description="in milliseconds"),
     maxStartTime: int = Query(le=MAX_INT64, description="in milliseconds"),
+    startStationName: str = Query(None),
+    endStationName: str = Query(None),
 ):
     if minStartTime > maxStartTime:
         detail = "start_time_max_ms must be greater than start_time_min_ms"
@@ -29,7 +31,9 @@ async def get_average_duration(
     if maxStartTime - minStartTime > YEAR:
         detail = "the range must not exceed 1 year"
         raise HTTPException(status_code=400, detail=detail)
-    return await controller.get_average_duration(minStartTime, maxStartTime)
+    return await controller.get_average_duration(
+        minStartTime, maxStartTime, startStationName, endStationName
+    )
 
 
 @trip_router.get(

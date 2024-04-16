@@ -49,20 +49,23 @@ async def test_get_average_duration(trip_repo, mock_trip_collection):
 
 
 @pytest.mark.asyncio
-async def test_get_durations_no_results(trip_repo, mock_trip_collection):
+async def test_aggregate_duration_no_results(trip_repo, mock_trip_collection):
     mock_trip_collection.aggregate.return_value.to_list = AsyncMock(return_value=[])
-    result = await trip_repo.get_durations(0, 86400000)
+    result = await trip_repo.aggregate_duration(0, 86400000, None, None)
     assert result == {}
 
 
 @pytest.mark.asyncio
-async def test_get_durations(trip_repo, mock_trip_collection):
+async def test_aggregate_duration(trip_repo, mock_trip_collection):
     minStartTimeMs, maxStartTimeMs = 0, 86400000
     expected_result = {"_id": None, "sumDuration": 500, "countTrips": 5}
     mock_trip_collection.aggregate.return_value.to_list = AsyncMock(
         return_value=[expected_result]
     )
-    await trip_repo.get_durations(minStartTimeMs, maxStartTimeMs)
+    result = await trip_repo.aggregate_duration(
+        minStartTimeMs, maxStartTimeMs, None, None
+    )
+    assert result == expected_result
     mock_trip_collection.aggregate.assert_called_once_with(
         [
             {

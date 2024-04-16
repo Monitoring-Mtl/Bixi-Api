@@ -29,15 +29,42 @@ def trip_controller(mock_trip_repository, mock_station_repository, mock_cache):
 
 
 @pytest.mark.asyncio
-async def test_get_average_duration(trip_controller, mock_trip_repository, mock_cache):
+async def test_get_average_duration_no_station_names(
+    trip_controller, mock_trip_repository, mock_cache
+):
     minStartTimeMs = 1609459200000
     maxStartTimeMs = 1609545600000
-    expected = {"trips": 42}
+    expected = {"averageDuration": 120, "tripCount": 42}
     mock_trip_repository.get_average_duration.return_value = expected
+
     result = await trip_controller.get_average_duration(minStartTimeMs, maxStartTimeMs)
+
     assert result == expected
     mock_trip_repository.get_average_duration.assert_awaited_once_with(
-        minStartTimeMs, maxStartTimeMs
+        minStartTimeMs, maxStartTimeMs, None, None
+    )
+    mock_cache.get.assert_awaited_once()
+    mock_cache.set.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_get_average_duration_with_station_names(
+    trip_controller, mock_trip_repository, mock_cache
+):
+    minStartTimeMs = 1609459200000
+    maxStartTimeMs = 1609545600000
+    startStationName = "Station A"
+    endStationName = "Station B"
+    expected = {"averageDuration": 150, "tripCount": 30}
+    mock_trip_repository.get_average_duration.return_value = expected
+
+    result = await trip_controller.get_average_duration(
+        minStartTimeMs, maxStartTimeMs, startStationName, endStationName
+    )
+
+    assert result == expected
+    mock_trip_repository.get_average_duration.assert_awaited_once_with(
+        minStartTimeMs, maxStartTimeMs, startStationName, endStationName
     )
     mock_cache.get.assert_awaited_once()
     mock_cache.set.assert_awaited_once()
@@ -103,15 +130,15 @@ async def test_use_cache_hit(trip_controller, mock_cache, mock_trip_repository):
 @pytest.mark.asyncio
 async def test_use_cache_miss(trip_controller, mock_cache, mock_trip_repository):
     mock_cache.get = AsyncMock(return_value=None)
-    mock_trip_repository.get_average_duration = AsyncMock(return_value={"trips": 42})
+    expected_result = {"averageDuration": 120, "tripCount": 42}
+    mock_trip_repository.get_average_duration = AsyncMock(return_value=expected_result)
     result = await trip_controller.get_average_duration(1609459200000, 1609545600000)
-    assert result == {"trips": 42}
+    assert result == expected_result
     mock_cache.get.assert_awaited_once()
     mock_cache.set.assert_awaited_once()
     mock_trip_repository.get_average_duration.assert_awaited_once_with(
-        1609459200000, 1609545600000
+        1609459200000, 1609545600000, None, None
     )
-
 
 @pytest.mark.asyncio
 async def test_get_arrondissements(

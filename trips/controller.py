@@ -48,10 +48,16 @@ class Controller:
         self.station_repository = station_repository
         self.cache = cache
 
-    @use_cache(key_prefix="trip_stats")
-    async def get_average_duration(self, minStartTimeMs: int, maxStartTimeMs: int):
+    @use_cache(key_prefix="average_duration")
+    async def get_average_duration(
+        self,
+        minStartTimeMs: int,
+        maxStartTimeMs: int,
+        startStationName: str | None = None,
+        endStationName: str | None = None,
+    ):
         return await self.trip_repository.get_average_duration(
-            minStartTimeMs, maxStartTimeMs
+            minStartTimeMs, maxStartTimeMs, startStationName, endStationName
         )
 
     @use_cache(key_prefix="minimum_start_time")

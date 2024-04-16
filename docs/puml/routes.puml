@@ -1,7 +1,7 @@
 @startmindmap routes
 * /
 ** /trips
-*** /duration/average?min_start_time=&max_start_time=
+*** /duration/average?startStationName=&endStationName=&minStartTime=&maxStartTime=
 *** /time
 **** /start
 ***** /minimum

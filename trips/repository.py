@@ -15,33 +15,49 @@ class TripRepository:
     def __init__(self, collection: AsyncIOMotorCollection):
         self.collection = collection
 
-    async def get_average_duration(self, minStartTimeMs: int, maxStartTimeMs: int):
+    async def get_average_duration(
+        self,
+        minStartTimeMs: int,
+        maxStartTimeMs: int,
+        startStationName: str | None = None,
+        endStationName: str | None = None,
+    ):
         segments = create_segments(minStartTimeMs, maxStartTimeMs)
-        tasks = [self.get_durations(start, end) for start, end in segments]
+        tasks = [
+            self.aggregate_duration(start, end, startStationName, endStationName)
+            for start, end in segments
+        ]
         results = await gather(*tasks)
         total_duration = sum(r["sumDuration"] for r in results if "sumDuration" in r)
         total_trips = sum(r["countTrips"] for r in results if "countTrips" in r)
-        print(f"Calculating average duration from {minStartTimeMs} to {maxStartTimeMs}")
+        print("Calculating average duration")
         return {
             "averageDuration": total_duration / total_trips if total_trips else None,
             "tripCount": total_trips,
         }
 
-    async def get_durations(self, minStartTimeMs, maxStartTimeMs):
-        matching = {
-            "$match": {
-                "startTimeMs": {"$gt": minStartTimeMs, "$lte": maxStartTimeMs},
-                "durationMs": {"$ne": None},
-            }
+    async def aggregate_duration(
+        self, minStartTimeMs, maxStartTimeMs, startStationName, endStationName
+    ):
+        filter_criteria = {
+            "startTimeMs": {"$gt": minStartTimeMs, "$lte": maxStartTimeMs},
+            "durationMs": {"$ne": None},
         }
-        grouping = {
-            "$group": {
-                "_id": None,
-                "sumDuration": {"$sum": "$durationMs"},
-                "countTrips": {"$count": {}},
-            }
-        }
-        cursor = self.collection.aggregate([matching, grouping])
+        if startStationName:
+            filter_criteria["startStationName"] = startStationName
+        if endStationName:
+            filter_criteria["endStationName"] = endStationName
+        aggregation_pipeline = [
+            {"$match": filter_criteria},
+            {
+                "$group": {
+                    "_id": None,
+                    "sumDuration": {"$sum": "$durationMs"},
+                    "countTrips": {"$count": {}},
+                }
+            },
+        ]
+        cursor = self.collection.aggregate(aggregation_pipeline)
         result = await cursor.to_list(length=1)
         return result[0] if result else {}
 
